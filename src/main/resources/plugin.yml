@@ -1,0 +1,15 @@
+name: LostHeroPlug
+version: '0.1.0'
+main: ru.kitburg.spawn.LostHeroPlug
+api-version: '1.21'
+commands:
+  sethome:
+    description: Создаёт точку дома
+  spawn:
+    description: Тпхает на спавн
+  home:
+    description: Тпхает на точку дома
+  helplh:
+    description: Все команды сервера LostHero
+  rtp:
+    description: Тпхает рандомно
