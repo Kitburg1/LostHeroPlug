@@ -9,6 +9,8 @@ public class Helplh {
         player.sendMessage("Чтобы телепортироваться на спавн "+ChatColor.AQUA+"/spawn");
         player.sendMessage("Чтобы создать точку дома "+ChatColor.AQUA+"/sethome");
         player.sendMessage("Чтобы телепортироваться на точку дома "+ChatColor.AQUA+"/home");
+        player.sendMessage("Чтобы телепортироваться в случайную точку "+ChatColor.AQUA+"/rtp");
         player.sendMessage("Удачной игры на "+ChatColor.AQUA+"Lost"+ChatColor.RED+"Hero");
+
     }
 }

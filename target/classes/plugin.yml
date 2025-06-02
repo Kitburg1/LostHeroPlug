@@ -13,3 +13,5 @@ commands:
     description: Все команды сервера LostHero
   rtp:
     description: Тпхает рандомно
+  writebook:
+    description: Написать и отправить книгу другим игрокам

@@ -1,8 +1,11 @@
 package ru.kitburg.spawn;
 
+import ru.kitburg.spawn.BookInteractionListener;
+import ru.kitburg.spawn.BookShareCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,14 +15,15 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 
 public final class LostHeroPlug extends JavaPlugin implements Listener {
     File homes;
     HashMap<String, ArrayList<Double>> players = new HashMap<>();
+    private final Map<UUID, Long> cooldowns = new HashMap<>();
+
+    private static LostHeroPlug instance;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -29,8 +33,11 @@ public final class LostHeroPlug extends JavaPlugin implements Listener {
         getCommand("home").setExecutor(this);
         getCommand("helplh").setExecutor(this);
         getCommand("rtp").setExecutor(this);
+        getCommand("writebook").setExecutor(new BookShareCommand());
+        getServer().getPluginManager().registerEvents(new BookInteractionListener(), this);
         updateTabList();
         getServer().getPluginManager().registerEvents(this, this);
+
 
         homes = new File("homes.txt");
         if (!homes.exists()) {
@@ -49,6 +56,9 @@ public final class LostHeroPlug extends JavaPlugin implements Listener {
                 System.out.println("OnEnable");
             }
         }
+    }
+    public static LostHeroPlug getInstance() {
+        return instance;
     }
     public static void updateTabList() {
 
@@ -83,7 +93,7 @@ public final class LostHeroPlug extends JavaPlugin implements Listener {
         Helplh helplh = new Helplh();
 
         if(!(sender instanceof Player)){
-            System.out.println("Возможно только от игрока!");
+            System.out.println("❌Возможно только от игрока!");
             return false;
         }
         if (command.getName().toLowerCase().equals("spawn")){
@@ -121,15 +131,46 @@ public final class LostHeroPlug extends JavaPlugin implements Listener {
         player.sendMessage("Вы поставили точку "+ ChatColor.GREEN +"дома!");
     }
 
-    void rtps(Player player){
+    public void rtps(Player player) {
+        UUID uuid = player.getUniqueId();
+        long now = System.currentTimeMillis();
+        long cooldownTime = 60 * 1000; // 60 секунд в мс
+
+        // Проверка кулдауна
+        if (cooldowns.containsKey(uuid)) {
+            long lastUsed = cooldowns.get(uuid);
+            long timePassed = now - lastUsed;
+
+            if (timePassed < cooldownTime) {
+                long secondsLeft = (cooldownTime - timePassed) / 1000;
+                player.sendMessage("⏳ Подожди " + secondsLeft + " сек. перед телепортацией.");
+                return;
+            }
+        }
+
+        // Генерация координат
         Random random = new Random();
-        int max = 4500;
         int min = 2000;
-        int y = 66;
-        int z =random.nextInt(max -min + 1) + min;
-        int x =random.nextInt(max -min + 1) + min;
-        Location olc = new Location(player.getWorld(), z, y, x);
-        player.teleport(olc);
+        int max = 4500;
+
+        int x = random.nextInt(max - min + 1) + min;
+        int z = random.nextInt(max - min + 1) + min;
+
+        World world = player.getWorld();
+        int y = world.getHighestBlockYAt(x, z) + 1;
+
+        Location location = new Location(world, x, y, z);
+
+        // Проверка границ мира
+        if (!world.getWorldBorder().isInside(location)) {
+            player.sendMessage("🚫 Место за границей мира. Попробуй снова.");
+            return;
+        }
+
+        // Телепортация и установка кулдауна
+        player.teleport(location);
+        cooldowns.put(uuid, now);
+        player.sendMessage("✅ Телепортация в: X=" + x + ", Y=" + y + ", Z=" + z);
     }
 
     void home(Player player){
