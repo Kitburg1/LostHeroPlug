@@ -9,6 +9,8 @@ Teleport to random location ```/rtp```
 
 Teleport to your world spawn ```/spawn```
 
+Book to send information to other players ```/writebook```
+
 Help mod ```/helplh```
 
 # Thanks!
